@@ -103,7 +103,7 @@ public class TaskManager {
         return epic.getSubTaskIds();
     }
 
-    public void updateStatus(Epic epic) {
+    private void updateStatus(Epic epic) {
         boolean allDone = true;
         boolean allNew = true;
 
