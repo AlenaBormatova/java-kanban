@@ -1,3 +1,7 @@
+package task;
+
+import tools.Status;
+
 import java.util.Objects;
 
 public class Task {
