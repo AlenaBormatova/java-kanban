@@ -8,18 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private static class Node {
-        Task task; // Задача
-        Node prev; // Ссылка на предыдущий узел
-        Node next; // Ссылка на следующий узел
-
-        Node(Task task, Node prev, Node next) {
-            this.task = task;
-            this.prev = prev;
-            this.next = next;
-        }
-    }
-
     private final Map<Integer, Node> historyMap = new HashMap<>(); // HashMap для быстрого доступа к узлам по id задачи
     private Node head; // Ссылка на начало списка
     private Node tail; // Ссылка на конец списка
@@ -80,5 +68,17 @@ public class InMemoryHistoryManager implements HistoryManager {
             current = current.next;
         }
         return tasks; // Вернуть заполненный список
+    }
+
+    private static class Node {
+        Task task; // Задача
+        Node prev; // Ссылка на предыдущий узел
+        Node next; // Ссылка на следующий узел
+
+        Node(Task task, Node prev, Node next) {
+            this.task = task;
+            this.prev = prev;
+            this.next = next;
+        }
     }
 }
