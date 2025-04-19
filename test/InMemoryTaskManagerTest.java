@@ -1,5 +1,3 @@
-package test;
-
 import manager.TaskManager;
 import manager.InMemoryTaskManager;
 import task.Epic;
