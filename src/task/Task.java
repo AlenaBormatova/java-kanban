@@ -1,6 +1,7 @@
 package task;
 
 import tools.Status;
+import tools.TaskType;
 
 import java.util.Objects;
 
@@ -40,6 +41,10 @@ public class Task {
         this.status = status;
     }
 
+    public TaskType getType() {
+        return TaskType.TASK;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -61,5 +66,14 @@ public class Task {
                 ", id=" + id +
                 ", status=" + status +
                 '}';
+    }
+
+    public String toStringFromFile() { // Метод преобразует объект задачи в CSV-строку
+        return String.format("%d,%s,%s,%s,%s",
+                getId(),
+                getType().name(),
+                getName(),
+                getStatus().name(),
+                getDescription());
     }
 }
