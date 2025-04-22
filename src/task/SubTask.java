@@ -21,11 +21,6 @@ public class SubTask extends Task {
     }
 
     @Override
-    public String getEpicIdForCSV() {
-        return String.valueOf(getEpicId()); // Возвращает ID эпика как строку
-    }
-
-    @Override
     public String toString() {
         return "Subtask{" +
                 " name='" + getName() + '\'' +
