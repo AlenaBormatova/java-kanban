@@ -1,6 +1,7 @@
 package task;
 
 import tools.Status;
+import tools.TaskType;
 
 public class SubTask extends Task {
     private int epicId;
@@ -15,6 +16,11 @@ public class SubTask extends Task {
     }
 
     @Override
+    public TaskType getType() {
+        return TaskType.SUBTASK;
+    }
+
+    @Override
     public String toString() {
         return "Subtask{" +
                 " name='" + getName() + '\'' +
@@ -23,5 +29,16 @@ public class SubTask extends Task {
                 ", status=" + getStatus() +
                 ", epicId=" + epicId +
                 '}';
+    }
+
+    @Override
+    public String toStringFromFile() { // Метод преобразует объект подзадачи в CSV-строку
+        return String.format("%d,%s,%s,%s,%s,%d",
+                getId(),
+                getType().name(),
+                getName(),
+                getStatus().name(),
+                getDescription(),
+                getEpicId());
     }
 }

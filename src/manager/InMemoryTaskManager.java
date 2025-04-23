@@ -11,11 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int counter = 1;
-    private Map<Integer, Task> tasks = new HashMap<>();
-    private Map<Integer, Epic> epics = new HashMap<>();
-    private Map<Integer, SubTask> subTasks = new HashMap<>();
-    private HistoryManager historyManager = Managers.getDefaultHistory();
+    protected int counter = 1;
+    protected Map<Integer, Task> tasks = new HashMap<>();
+    protected Map<Integer, Epic> epics = new HashMap<>();
+    protected Map<Integer, SubTask> subTasks = new HashMap<>();
+    protected HistoryManager historyManager = Managers.getDefaultHistory();
 
     @Override
     public List<Task> getAllTasks() {
@@ -135,7 +135,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<SubTask> getSubTasksByEpicId(int epicId) {
-        ArrayList<SubTask> result = new ArrayList<>();
+        List<SubTask> result = new ArrayList<>();
         Epic epic = epics.get(epicId);
         for (int subTaskId : epic.getSubTaskIds()) {
             SubTask subtask = subTasks.get(subTaskId);
