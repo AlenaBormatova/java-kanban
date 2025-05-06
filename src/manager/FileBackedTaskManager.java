@@ -1,14 +1,16 @@
 package manager;
 
-import task.Task;
 import task.Epic;
 import task.SubTask;
-import tools.TaskType;
+import task.Task;
 import tools.Status;
+import tools.TaskType;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     switch (task.getType()) { // Распределяем задачи в зависимости от типа задачи
                         case TASK:
                             manager.tasks.put(task.getId(), task);
+                            // manager.addToPrioritizedTasks(task);
                             break;
                         case EPIC:
                             manager.epics.put(task.getId(), (Epic) task);
@@ -39,6 +42,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         case SUBTASK:
                             SubTask subTask = (SubTask) task;
                             manager.subTasks.put(subTask.getId(), subTask);
+                            // manager.addToPrioritizedTasks(subTask);
                             break;
                     }
                     if (task.getId() >= manager.counter) { // Обновление счётчика ID
@@ -137,7 +141,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private void save() {
         try {
             List<String> lines = new ArrayList<>(); // Создаётся пустой список lines для хранения строк файла
-            lines.add("id,type,name,status,description,epic"); // Первой добавляется строка-заголовок с названиями полей в CSV-формате
+            lines.add("id,type,name,description,status,startTime,duration,endTime,subTaskId"); // Первой добавляется строка-заголовок с названиями полей в CSV-формате
 
             for (Task task : getAllTasks()) { // Для каждой задачи из getAllTasks()
                 lines.add(task.toStringFromFile()); // Каждая задача преобразуется в CSV-строку, строка добавляется в список lines
@@ -168,19 +172,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String name = fields[2];
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
+        Duration duration = (fields.length > 5 && !fields[5].equals("0")) ?
+                Duration.ofMinutes(Long.parseLong(fields[5])) : null;
+        LocalDateTime startTime = (fields.length > 6 && !fields[6].equals("null")) ?
+                LocalDateTime.parse(fields[6]) : null;
 
         switch (type) { // Создание объекта в зависимости от типа
             case TASK:
-                Task task = new Task(name, description, status); // Создаётся новый Task, устанавливаются поля
+                Task task = new Task(name, description, status, duration, startTime); // Создаётся новый Task, устанавливаются поля
                 task.setId(id); // Задаётся ID
                 return task; // Возвращается созданный объект
             case EPIC:
-                Epic epic = new Epic(name, description, status); // Создаётся новый Epic, устанавливаются поля
+                Epic epic = new Epic(name, description, status, duration, startTime); // Создаётся новый Epic, устанавливаются поля
                 epic.setId(id); // Задаётся ID
                 return epic; // Возвращается созданный объект
             case SUBTASK:
                 int epicId = parseEpicId(fields);
-                SubTask subTask = new SubTask(name, description, status, epicId); // Создаётся SubTask с привязкой к эпику
+                SubTask subTask = new SubTask(name, description, status, epicId, duration, startTime); // Создаётся SubTask с привязкой к эпику
                 subTask.setId(id);
                 return subTask; // Возвращается созданный объект
             default:
@@ -189,9 +197,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static int parseEpicId(String[] fields) {
-        if (fields.length > 5 && !fields[5].isEmpty()) {
+        if (fields.length > 7 && !fields[7].isEmpty()) {
             try {
-                return Integer.parseInt(fields[5].trim());
+                return Integer.parseInt(fields[7].trim());
             } catch (NumberFormatException e) {
                 return 0;
             }

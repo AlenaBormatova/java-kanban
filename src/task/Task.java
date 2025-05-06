@@ -3,6 +3,8 @@ package task;
 import tools.Status;
 import tools.TaskType;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -10,11 +12,28 @@ public class Task {
     private String description;
     private int id;
     private Status status;
+    private Duration duration; // Продолжительность задачи
+    private LocalDateTime startTime; // Время начала задачи
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
+    }
+
+    public Task(int id, String name, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+    }
+
+    public Task(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     public String getName() {
@@ -65,15 +84,58 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 
     public String toStringFromFile() { // Метод преобразует объект задачи в CSV-строку
-        return String.format("%d,%s,%s,%s,%s",
+        // Обработка duration
+        long durationMinutes;
+        if (duration != null) {
+            durationMinutes = duration.toMinutes(); // Если duration задан, конвертируем в минуты
+        } else {
+            durationMinutes = 0; // Если duration не задан, используем 0 по умолчанию
+        }
+
+        // Обработка startTime
+        String startTimeString;
+        if (startTime != null) {
+            startTimeString = startTime.toString(); // Если startTime задан, конвертируем в строку
+        } else {
+            startTimeString = "null"; // Если startTime не задан, используем строку "null"
+        }
+
+        return String.format("%d,%s,%s,%s,%s,%d,%s",
                 getId(),
                 getType().name(),
                 getName(),
                 getStatus().name(),
-                getDescription());
+                getDescription(),
+                durationMinutes, // Используем вычисленное значение продолжительности
+                startTimeString); // Используем вычисленное значение времени начала
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) {
+            return null;
+        }
+        return startTime.plus(duration);
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 }

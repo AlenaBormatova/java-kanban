@@ -1,28 +1,25 @@
 import manager.HistoryManager;
-import manager.TaskManager;
-import manager.InMemoryTaskManager;
 import manager.InMemoryHistoryManager;
+import manager.InMemoryTaskManager;
+import manager.TaskManager;
+import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.SubTask;
 import task.Task;
 import tools.Status;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
     @Test
     void addTaskToHistory() {
-        TaskManager taskManager = new InMemoryTaskManager();
+        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
+        Task task = new Task(1, "Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
+        historyManager.add(task);
 
-        Task task = new Task("Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
-        taskManager.addTask(task);
-
-        taskManager.getTaskById(task.getId()); // Добавляем задачу в историю (это происходит при вызове getTaskById)
-
-        final List<Task> history = taskManager.getHistory(); // Получаем историю просмотров
+        final List<Task> history = historyManager.getHistory(); // Получаем историю просмотров
 
         assertNotNull(history, "История не должна быть null.");
         assertEquals(1, history.size(), "История должна содержать одну задачу.");
@@ -31,16 +28,16 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void testDuplicateTasks() { // Проверка на наличие дубликатов
-        TaskManager taskManager = new InMemoryTaskManager();
+        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
         Task task = new Task("Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
-        taskManager.addTask(task);
+        historyManager.add(task);
 
         // Добавить одну и ту же задачу в историю несколько раз
-        taskManager.getTaskById(task.getId());
-        taskManager.getTaskById(task.getId());
-        taskManager.getTaskById(task.getId());
+        historyManager.add(task);
+        historyManager.add(task);
+        historyManager.add(task);
 
-        List<Task> history = taskManager.getHistory();
+        List<Task> history = historyManager.getHistory();
 
         assertEquals(1, history.size(), "История должна содержать только один экземпляр задачи");
     }
@@ -85,7 +82,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void testRemoveLastTask() { // Проверка на удаление последней задачи
-        HistoryManager taskManager = new InMemoryHistoryManager();
+        InMemoryHistoryManager taskManager = new InMemoryHistoryManager();
         Task task1 = new Task("Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
         task1.setId(1);
         Task task2 = new Task("Тестовая задача № 2", "Описание тестовой задачи № 2", Status.NEW);
@@ -101,27 +98,23 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldMaintainInsertionOrder() { // Проверка на соблюдение порядка вставки
-        TaskManager taskManager = new InMemoryTaskManager();
-        Task task1 = new Task("Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
-        Task task2 = new Task("Тестовая задача № 2", "Описание тестовой задачи № 2", Status.NEW);
-        Task task3 = new Task("Тестовая задача № 3", "Описание тестовой задачи № 3", Status.NEW);
+        InMemoryHistoryManager historyManager = new InMemoryHistoryManager(); // Создание экземпляра менеджера
 
-        taskManager.addTask(task1);
-        taskManager.addTask(task2);
-        taskManager.addTask(task3);
+        Task task1 = new Task(1, "Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
+        Task task2 = new Task(2, "Тестовая задача № 2", "Описание тестовой задачи № 2", Status.NEW);
+        Task task3 = new Task(3, "Тестовая задача № 3", "Описание тестовой задачи № 3", Status.NEW);
 
-        // Добавить задачи в историю в нелинейном порядке
-        taskManager.getTaskById(task2.getId());
-        taskManager.getTaskById(task1.getId());
-        taskManager.getTaskById(task3.getId());
-        taskManager.getTaskById(task2.getId()); // Дубликат
+        // Добавляем задачи в требуемом порядке
+        historyManager.add(task1);
+        historyManager.add(task3);
+        historyManager.add(task2); // Третья задача добавляется последней
 
-        List<Task> history = taskManager.getHistory();
+        List<Task> history = historyManager.getHistory();
 
-        assertEquals(3, history.size(), "История должна содержать 3 уникальных задания");
-        assertEquals(task1, history.get(0), "Первой задачей должна быть Тестовая задача № 1");
-        assertEquals(task3, history.get(1), "Второй задачей должна быть Тестовая задача № 3");
-        assertEquals(task2, history.get(2), "Третьей задачей должна быть Тестовая задача № 2 (последняя)");
+        assertEquals(3, history.size(), "История должна содержать 3 уникальные задачи");
+        assertEquals(task1, history.get(0), "Первая задача должна быть 'Тестовая задача № 1'");
+        assertEquals(task3, history.get(1), "Вторая задача должна быть 'Тестовая задача № 3'");
+        assertEquals(task2, history.get(2), "Третья задача должна быть 'Тестовая задача № 2' (добавлена последней)");
     }
 
     @Test
@@ -160,5 +153,35 @@ class InMemoryHistoryManagerTest {
         // Дополнительная проверка через менеджер
         assertTrue(taskManager.getSubTasksByEpicId(epicId).isEmpty(),
                 "Менеджер не должен возвращать удаленные подзадачи для эпика");
+    }
+
+    @Test
+    void testEmptyHistory() { // Проверяем, что история изначально пуста
+        HistoryManager historyManager = new InMemoryHistoryManager();
+        List<Task> history = historyManager.getHistory();
+
+        assertTrue(history.isEmpty(), "История должна быть пустой изначально");
+    }
+
+    @Test
+    void testRemoveFromMiddle() { //  Проверка на удаление задачи из середины истории
+        HistoryManager historyManager = new InMemoryHistoryManager();
+        Task task1 = new Task("Задача № 1", "Описание задачи № 1", Status.NEW);
+        task1.setId(1);
+        Task task2 = new Task("Задача № 2", "Описание задачи № 2", Status.NEW);
+        task2.setId(2);
+        Task task3 = new Task("Задача № 3", "Описание задачи № 3", Status.NEW);
+        task3.setId(3);
+
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        historyManager.remove(2); // Удаляем из середины
+
+        List<Task> history = historyManager.getHistory();
+        assertEquals(2, history.size(), "В истории должно быть 2 задачи после удаления.");
+        assertEquals(task1, history.get(0), "Первая задача должна остаться.");
+        assertEquals(task3, history.get(1), "Третья задача должна переместиться на вторую позицию.");
     }
 }
