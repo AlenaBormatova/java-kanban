@@ -15,7 +15,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Epic> epics = new HashMap<>();
     protected Map<Integer, SubTask> subTasks = new HashMap<>();
     protected HistoryManager historyManager = Managers.getDefaultHistory();
-    protected Set<Task> prioritizedTasks = new TreeSet<>( // Добавляем новое поле для хранения отсортированных задач
+    protected Set<Task> prioritizedTasks = new TreeSet<>(// Добавляем новое поле для хранения отсортированных задач
             Comparator.comparing(Task::getStartTime, // Компаратор для сортировки задач по startTime
                             Comparator.nullsLast(Comparator.naturalOrder())) // null значения идут в конец
                     .thenComparingInt(Task::getId)); // Если startTime одинаковый, сортируем по id
