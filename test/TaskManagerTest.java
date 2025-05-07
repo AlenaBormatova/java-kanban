@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class TaskManagerTest<T extends TaskManager> {
     protected T taskManager;
 
-    protected abstract T createTaskManager() throws IOException; // Абстрактный метод для создания конкретной реализации менеджера задач
+    protected abstract T createTaskManager() throws IOException;
 
     @BeforeEach
     void setUp() throws IOException {
-        taskManager = createTaskManager(); // Создать экземпляр менеджера задач
+        taskManager = createTaskManager();
     }
 
     @Test // Проверка добавления и получения задачи
@@ -69,12 +69,10 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test // Проверяем пересекающиеся задачи
     void testTaskOverlapping() {
-        // Первая задача: с 10:00 до 11:00
         Task task1 = new Task("Задача № 1", "Описание задачи № 1", Status.NEW,
                 Duration.ofHours(1), LocalDateTime.of(2025, 5, 1, 10, 0));
         taskManager.addTask(task1);
 
-        // Пересекающаяся задача: с 10:30 до 11:30
         Task overlappingTask = new Task("Пересекающаяся задача", "Описание пересекающейся задачи", Status.NEW,
                 Duration.ofHours(1), LocalDateTime.of(2025, 5, 1, 10, 30));
 
@@ -84,12 +82,10 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test // Проверяем непересекающиеся задачи
     void testNoOverlapping() {
-        // Первая задача: с 10:00 до 11:00
         Task task1 = new Task("Задача № 1", "Описание задачи № 1", Status.NEW,
                 Duration.ofHours(1), LocalDateTime.of(2025, 5, 1, 10, 0));
         taskManager.addTask(task1);
 
-        // Непересекающаяся задача: с 11:00 до 12:00
         Task nonOverlappingTask = new Task("Непересекающаяся задача", "Описание непересекающейся задачи", Status.NEW,
                 Duration.ofHours(1), LocalDateTime.of(2025, 5, 1, 11, 0));
 

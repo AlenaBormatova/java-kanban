@@ -27,14 +27,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try {
             List<String> fileData = Files.readAllLines(file.toPath());
 
-            for (int i = 1; i < fileData.size(); i++) { // Начинаем с индекса 1 (пропускаем заголовок)
-                Task task = fromString(fileData.get(i)); // Каждая строка преобразуется в объект Task через fromString()
+            for (int i = 1; i < fileData.size(); i++) {
+                Task task = fromString(fileData.get(i));
 
                 if (task != null) {
-                    switch (task.getType()) { // Распределяем задачи в зависимости от типа задачи
+                    switch (task.getType()) {
                         case TASK:
                             manager.tasks.put(task.getId(), task);
-                            // manager.addToPrioritizedTasks(task);
                             break;
                         case EPIC:
                             manager.epics.put(task.getId(), (Epic) task);
@@ -42,24 +41,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         case SUBTASK:
                             SubTask subTask = (SubTask) task;
                             manager.subTasks.put(subTask.getId(), subTask);
-                            // manager.addToPrioritizedTasks(subTask);
                             break;
                     }
-                    if (task.getId() >= manager.counter) { // Обновление счётчика ID
-                        manager.counter = task.getId() + 1; // Если ID больше - новые задачи получают уникальные ID
+                    if (task.getId() >= manager.counter) {
+                        manager.counter = task.getId() + 1;
                     }
                 }
             }
 
             // Связь подзадач с эпиками
-            for (SubTask subTask : manager.subTasks.values()) { // Проходим по всем подзадачам
-                Epic epic = manager.epics.get(subTask.getEpicId()); // Для каждой задачи находим соответствующий эпик по epicId
+            for (SubTask subTask : manager.subTasks.values()) {
+                Epic epic = manager.epics.get(subTask.getEpicId());
                 if (epic != null) {
-                    epic.addSubTaskId(subTask.getId()); // Если эпик существует - добавляем ID подзадачи в его список
+                    epic.addSubTaskId(subTask.getId());
                 }
             }
 
-        } catch (IOException e) { // Если возникла ошибка ввода-вывода - исключение
+        } catch (IOException e) {
             throw new ManagerSaveException("Ошибка при чтении файла", e);
         }
         return manager;
@@ -140,31 +138,31 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() {
         try {
-            List<String> lines = new ArrayList<>(); // Создаётся пустой список lines для хранения строк файла
-            lines.add("id,type,name,description,status,startTime,duration,endTime,subTaskId"); // Первой добавляется строка-заголовок с названиями полей в CSV-формате
+            List<String> lines = new ArrayList<>();
+            lines.add("id,type,name,description,status,startTime,duration,endTime,subTaskId");
 
-            for (Task task : getAllTasks()) { // Для каждой задачи из getAllTasks()
-                lines.add(task.toStringFromFile()); // Каждая задача преобразуется в CSV-строку, строка добавляется в список lines
+            for (Task task : getAllTasks()) {
+                lines.add(task.toStringFromFile());
             }
 
-            for (Epic epic : getAllEpics()) { // Для каждого эпика из getAllEpics()
-                lines.add(epic.toStringFromFile()); // Каждый эпик преобразуется в CSV-строку, строка добавляется в список lines
+            for (Epic epic : getAllEpics()) {
+                lines.add(epic.toStringFromFile());
             }
 
-            for (SubTask subtask : getAllSubTasks()) { // Сохраняются все подзадачи через getAllSubTasks()
-                lines.add(subtask.toStringFromFile()); // Каждая подзадача преобразуется в CSV-строку, строка добавляется в список lines
+            for (SubTask subtask : getAllSubTasks()) {
+                lines.add(subtask.toStringFromFile());
             }
 
-            Files.write(file.toPath(), lines); // Весь подготовленный список строк записывается в файл
-        } catch (IOException e) { // Если возникла ошибка ввода-вывода - исключение
+            Files.write(file.toPath(), lines);
+        } catch (IOException e) {
             throw new ManagerSaveException("Ошибка при сохранении в файл", e);
         }
     }
 
     private static Task fromString(String value) { // Метод преобразует CSV-строку обратно в объект задачи
-        String[] fields = value.split(","); // Разбиваем строку по запятым на массив fields
+        String[] fields = value.split(",");
         if (fields.length < 5) {
-            return null; // Если полей меньше 5 (минимально необходимых) → возвращаем null (некорректная строка)
+            return null;
         }
 
         int id = Integer.parseInt(fields[0]);
@@ -177,22 +175,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         LocalDateTime startTime = (fields.length > 6 && !fields[6].equals("null")) ?
                 LocalDateTime.parse(fields[6]) : null;
 
-        switch (type) { // Создание объекта в зависимости от типа
+        switch (type) {
             case TASK:
-                Task task = new Task(name, description, status, duration, startTime); // Создаётся новый Task, устанавливаются поля
-                task.setId(id); // Задаётся ID
-                return task; // Возвращается созданный объект
+                Task task = new Task(name, description, status, duration, startTime);
+                task.setId(id);
+                return task;
             case EPIC:
-                Epic epic = new Epic(name, description, status, duration, startTime); // Создаётся новый Epic, устанавливаются поля
-                epic.setId(id); // Задаётся ID
-                return epic; // Возвращается созданный объект
+                Epic epic = new Epic(name, description, status, duration, startTime);
+                epic.setId(id);
+                return epic;
             case SUBTASK:
                 int epicId = parseEpicId(fields);
-                SubTask subTask = new SubTask(name, description, status, epicId, duration, startTime); // Создаётся SubTask с привязкой к эпику
+                SubTask subTask = new SubTask(name, description, status, epicId, duration, startTime);
                 subTask.setId(id);
-                return subTask; // Возвращается созданный объект
+                return subTask;
             default:
-                return null; // При ошибках
+                return null;
         }
     }
 

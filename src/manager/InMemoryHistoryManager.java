@@ -8,25 +8,25 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final Map<Integer, Node> historyMap = new HashMap<>(); // HashMap для быстрого доступа к узлам по id задачи
-    private Node head; // Ссылка на начало списка
-    private Node tail; // Ссылка на конец списка
+    private final Map<Integer, Node> historyMap = new HashMap<>();
+    private Node head;
+    private Node tail;
 
     @Override
     public void add(Task task) {
         int id = task.getId();
         if (historyMap.containsKey(id)) {
-            remove(id); // Удаляем старую версию задачи, если она уже есть
+            remove(id);
         }
-        linkLast(task); // Добавляем новую версию задачи
+        linkLast(task);
     }
 
     @Override
     public void remove(int id) {
-        Node node = historyMap.get(id); // Получаем узел по ключу (ID)
+        Node node = historyMap.get(id);
         if (node != null) {
-            historyMap.remove(id); // Удаляем запись из HashMap
-            removeNode(node); // Удаляем узел из двусвязного списка
+            historyMap.remove(id);
+            removeNode(node);
         }
     }
 
@@ -39,25 +39,25 @@ public class InMemoryHistoryManager implements HistoryManager {
         final Node newNode = new Node(task, tail, null);
 
         if (tail == null) {
-            head = newNode; // Первая задача становится головой
+            head = newNode;
         } else {
-            tail.next = newNode; // Следующий элемент текущего хвоста — новый узел
-            newNode.prev = tail; // Предыдущий элемент нового узла — текущий хвост
+            tail.next = newNode;
+            newNode.prev = tail;
         }
-        tail = newNode; // Новый узел становится хвостом
-        historyMap.put(task.getId(), newNode); // Сохраняем ссылку на узел в map
+        tail = newNode;
+        historyMap.put(task.getId(), newNode);
     }
 
     private void removeNode(Node node) {
         if (node == null) return;
 
-        if (node.prev == null) { // Если это первый элемент
+        if (node.prev == null) {
             head = node.next;
         } else {
             node.prev.next = node.next;
         }
 
-        if (node.next == null) { // Если это последний элемент
+        if (node.next == null) {
             tail = node.prev;
         } else {
             node.next.prev = node.prev;
@@ -75,9 +75,9 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private static class Node {
-        Task task; // Задача
-        Node prev; // Ссылка на предыдущий узел
-        Node next; // Ссылка на следующий узел
+        Task task;
+        Node prev;
+        Node next;
 
         Node(Task task, Node prev, Node next) {
             this.task = task;

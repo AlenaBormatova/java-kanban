@@ -12,8 +12,8 @@ public class Task {
     private String description;
     private int id;
     private Status status;
-    private Duration duration; // Продолжительность задачи
-    private LocalDateTime startTime; // Время начала задачи
+    private Duration duration;
+    private LocalDateTime startTime;
 
     public Task(String name, String description, Status status) {
         this.name = name;
@@ -37,19 +37,19 @@ public class Task {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public Status getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setId(int id) {
@@ -90,20 +90,18 @@ public class Task {
     }
 
     public String toStringFromFile() { // Метод преобразует объект задачи в CSV-строку
-        // Обработка duration
         long durationMinutes;
         if (duration != null) {
-            durationMinutes = duration.toMinutes(); // Если duration задан, конвертируем в минуты
+            durationMinutes = duration.toMinutes();
         } else {
-            durationMinutes = 0; // Если duration не задан, используем 0 по умолчанию
+            durationMinutes = 0;
         }
 
-        // Обработка startTime
         String startTimeString;
         if (startTime != null) {
-            startTimeString = startTime.toString(); // Если startTime задан, конвертируем в строку
+            startTimeString = startTime.toString();
         } else {
-            startTimeString = "null"; // Если startTime не задан, используем строку "null"
+            startTimeString = "null";
         }
 
         return String.format("%d,%s,%s,%s,%s,%d,%s",
@@ -112,16 +110,16 @@ public class Task {
                 getName(),
                 getStatus().name(),
                 getDescription(),
-                durationMinutes, // Используем вычисленное значение продолжительности
-                startTimeString); // Используем вычисленное значение времени начала
+                durationMinutes,
+                startTimeString);
     }
 
     public Duration getDuration() {
-        return duration;
+        return this.duration;
     }
 
     public LocalDateTime getStartTime() {
-        return startTime;
+        return this.startTime;
     }
 
     public LocalDateTime getEndTime() {

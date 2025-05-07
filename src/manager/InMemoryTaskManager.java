@@ -15,10 +15,10 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Epic> epics = new HashMap<>();
     protected Map<Integer, SubTask> subTasks = new HashMap<>();
     protected HistoryManager historyManager = Managers.getDefaultHistory();
-    protected Set<Task> prioritizedTasks = new TreeSet<>(// Добавляем новое поле для хранения отсортированных задач
-            Comparator.comparing(Task::getStartTime, // Компаратор для сортировки задач по startTime
-                            Comparator.nullsLast(Comparator.naturalOrder())) // null значения идут в конец
-                    .thenComparingInt(Task::getId)); // Если startTime одинаковый, сортируем по id
+    protected Set<Task> prioritizedTasks = new TreeSet<>(
+            Comparator.comparing(Task::getStartTime,
+                            Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparingInt(Task::getId));
 
     @Override
     public List<Task> getAllTasks() {
@@ -37,25 +37,25 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
-        getPrioritizedTasks().removeIf(task -> tasks.containsKey(task.getId())); // Удаляем все задачи из отсортированного списка
-        tasks.values().forEach(task -> historyManager.remove(task.getId())); // Удаляем все задачи из истории
+        getPrioritizedTasks().removeIf(task -> tasks.containsKey(task.getId()));
+        tasks.values().forEach(task -> historyManager.remove(task.getId()));
         tasks.clear();
     }
 
     @Override
     public void deleteAllEpics() {
-        getPrioritizedTasks().removeIf(task -> epics.containsKey(task.getId()) || // Удаляем все эпики из отсортированного списка
-                (task instanceof SubTask && epics.containsKey(((SubTask) task).getEpicId()))); // или их подзадачи
-        epics.values().forEach(epic -> historyManager.remove(epic.getId())); // Удаляем эпики из истории
-        subTasks.values().forEach(subTask -> historyManager.remove(subTask.getId())); // Удаляем подзадачи из истории
+        getPrioritizedTasks().removeIf(task -> epics.containsKey(task.getId()) ||
+                (task instanceof SubTask && epics.containsKey(((SubTask) task).getEpicId())));
+        epics.values().forEach(epic -> historyManager.remove(epic.getId()));
+        subTasks.values().forEach(subTask -> historyManager.remove(subTask.getId()));
         epics.clear();
         subTasks.clear();
     }
 
     @Override
     public void deleteAllSubTasks() {
-        getPrioritizedTasks().removeIf(task -> task instanceof SubTask); // Удаляем все подзадачи из отсортированного списка
-        subTasks.values().forEach(subTask -> historyManager.remove(subTask.getId())); // Удаляем подзадачи из истории
+        getPrioritizedTasks().removeIf(task -> task instanceof SubTask);
+        subTasks.values().forEach(subTask -> historyManager.remove(subTask.getId()));
         subTasks.clear();
         for (Epic epic : epics.values()) {
             epic.getSubTaskIds().clear();
@@ -65,31 +65,31 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(int id) {
-        historyManager.add(tasks.get(id)); // Добавляем задачу в историю
+        historyManager.add(tasks.get(id));
         return tasks.get(id);
     }
 
     @Override
     public Epic getEpicById(int id) {
-        historyManager.add(epics.get(id)); // Добавляем эпик в историю
+        historyManager.add(epics.get(id));
         return epics.get(id);
     }
 
     @Override
     public SubTask getSubTaskById(int id) {
-        historyManager.add(subTasks.get(id)); // Добавляем подзадачу в историю
+        historyManager.add(subTasks.get(id));
         return subTasks.get(id);
     }
 
     @Override
     public void addTask(Task task) {
-        if (isTaskOverlapping(task)) { // Проверяем пересечение с существующими задачами
+        if (isTaskOverlapping(task)) {
             throw new ManagerSaveException("Задача пересекается по времени с существующей");
         }
 
         task.setId(addId());
         tasks.put(task.getId(), task);
-        addToPrioritizedTasks(task); // Добавляем в отсортированное множество
+        addToPrioritizedTasks(task);
     }
 
     @Override
@@ -114,16 +114,16 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        Task existingTask = tasks.get(task.getId()); // Удаляем старую версию задачи из отсортированного множества
+        Task existingTask = tasks.get(task.getId());
         getPrioritizedTasks().remove(existingTask);
 
-        if (isTaskOverlapping(task)) { // Проверяем пересечение для обновленной задачи
-            getPrioritizedTasks().add(existingTask); // Возвращаем обратно
+        if (isTaskOverlapping(task)) {
+            getPrioritizedTasks().add(existingTask);
             throw new ManagerSaveException("Обновленная задача пересекается по времени с существующей");
         }
 
         tasks.put(task.getId(), task);
-        addToPrioritizedTasks(task); // Добавляем обновленную задачу
+        addToPrioritizedTasks(task);
     }
 
     @Override
@@ -134,18 +134,18 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(SubTask subtask) {
 
-        SubTask existingSubTask = subTasks.get(subtask.getId()); // Удаляем старую версию задачи из отсортированного множества
+        SubTask existingSubTask = subTasks.get(subtask.getId());
         getPrioritizedTasks().remove(existingSubTask);
 
-        if (isTaskOverlapping(subtask)) { // Проверяем пересечение для обновленной задачи
-            getPrioritizedTasks().add(existingSubTask); // Возвращаем обратно
+        if (isTaskOverlapping(subtask)) {
+            getPrioritizedTasks().add(existingSubTask);
             throw new ManagerSaveException("Обновленная подзадача пересекается по времени с существующей");
         }
 
         subTasks.put(subtask.getId(), subtask);
         Epic epic = epics.get(subtask.getEpicId());
         updateStatus(epic);
-        addToPrioritizedTasks(subtask); // Добавляем обновленную задачу
+        addToPrioritizedTasks(subtask);
     }
 
     @Override
@@ -157,13 +157,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteEpicById(int id) {
         Epic epic = epics.remove(id);
-        getPrioritizedTasks().removeIf(task -> task.getId() == id); // Получаем отсортированный список задач, удаляем все задачи, чей id совпадает с id эпика
-        historyManager.remove(id); // Удаляем эпик из истории просмотров по его id
+        getPrioritizedTasks().removeIf(task -> task.getId() == id);
+        historyManager.remove(id);
 
-        for (int subTaskId : epic.getSubTaskIds()) { // Удаление подзадач эпика: цикл по всем id подзадач, принадлежащих эпику
-            subTasks.remove(subTaskId); // Удаляет подзадачу с указанным ID из subTasks
-            getPrioritizedTasks().removeIf(task -> task.getId() == subTaskId); // Получаем отсортированный список подзадач, удаляем подзадачи, чей id совпадает с id эпика
-            historyManager.remove(subTaskId); // Удаляем подзадачу из истории просмотров
+        for (int subTaskId : epic.getSubTaskIds()) {
+            subTasks.remove(subTaskId);
+            getPrioritizedTasks().removeIf(task -> task.getId() == subTaskId);
+            historyManager.remove(subTaskId);
         }
     }
 
@@ -202,25 +202,25 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public boolean isTaskOverlapping(Task newTask) {
-        if (newTask.getStartTime() == null || newTask.getDuration() == null) { // Проверяем, что у задачи задано время начала и продолжительность
-            return false; // Если нет - пересечений быть не может
+        if (newTask.getStartTime() == null || newTask.getDuration() == null) {
+            return false;
         }
 
-        LocalDateTime newStart = newTask.getStartTime(); // Получаем время начала новой задачи
-        LocalDateTime newEnd = newTask.getEndTime(); // Получаем время окончания новой задачи
+        LocalDateTime newStart = newTask.getStartTime();
+        LocalDateTime newEnd = newTask.getEndTime();
 
-        return getPrioritizedTasks().stream() // Используем Stream API для проверки пересечений
-                .filter(task -> task.getStartTime() != null && task.getDuration() != null) // Фильтруем задачи с заданным временем
-                .anyMatch(existingTask -> { // Проверяем пересечение с каждой существующей задачей
+        return getPrioritizedTasks().stream()
+                .filter(task -> task.getStartTime() != null && task.getDuration() != null)
+                .anyMatch(existingTask -> {
                     LocalDateTime existingStart = existingTask.getStartTime();
                     LocalDateTime existingEnd = existingTask.getEndTime();
 
-                    return newStart.isBefore(existingEnd) && existingStart.isBefore(newEnd); // Математическая проверка пересечения интервалов
+                    return newStart.isBefore(existingEnd) && existingStart.isBefore(newEnd);
                 });
     }
 
-    private void addToPrioritizedTasks(Task task) { // Вспомогательный метод для добавления задачи в отсортированное множество
-        if (task.getStartTime() != null) { // Добавляем только задачи с указанным временем начала
+    private void addToPrioritizedTasks(Task task) {
+        if (task.getStartTime() != null) {
             prioritizedTasks.add(task);
         }
     }

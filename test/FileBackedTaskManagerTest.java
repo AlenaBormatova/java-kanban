@@ -24,7 +24,6 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     @Test
     void testSaveAndLoadEmptyFile() throws IOException { // Проверяет сохранение и загрузку пустого менеджера
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
-        // Проверяем, что все списки пусты
         assertTrue(manager.getAllTasks().isEmpty(), "Список задач должен быть пустым");
         assertTrue(manager.getAllEpics().isEmpty(), "Список эпиков должен быть пустым");
         assertTrue(manager.getAllSubTasks().isEmpty(), "Список подзадач должен быть пустым");
@@ -36,7 +35,6 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
                                                        (названия, статусы, связи)*/
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
 
-        // Создаем тестовые задачи
         Task task1 = new Task("Задача № 1", "Описание № 1", Status.NEW);
         manager.addTask(task1);
         Epic epic = new Epic("Эпик № 1", "Описание эпика № 1", Status.NEW);
@@ -50,20 +48,16 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         Task task2 = new Task("Задача № 2", "Описание № 2", Status.NEW);
         manager.addTask(task2);
 
-        // Загружаем
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
 
-        // Проверяем задачи
         List<Task> tasks = loadedManager.getAllTasks();
         assertEquals(2, tasks.size(), "Должно быть 2 задачи");
         assertEquals(task1.getName(), tasks.getFirst().getName(), "Названия задач должны совпадать");
 
-        // Проверяем эпики
         List<Epic> epics = loadedManager.getAllEpics();
         assertEquals(1, epics.size(), "Должен быть 1 эпик");
         assertEquals(epic.getName(), epics.getFirst().getName(), "Названия эпиков должны совпадать");
 
-        // Проверяем подзадачи
         List<SubTask> subTasks = loadedManager.getAllSubTasks();
         assertEquals(3, subTasks.size(), "Должно быть 3 подзадачи");
         assertEquals(epic.getId(), subTasks.getFirst().getEpicId(), "ID эпика у подзадачи должен совпадать");

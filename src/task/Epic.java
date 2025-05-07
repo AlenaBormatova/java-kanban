@@ -24,7 +24,6 @@ public class Epic extends Task {
         return subTaskIds;
     }
 
-    // Метод для получения списка подзадач (должен вызываться из менеджера)
     protected List<SubTask> getSubTasks() {
         return Collections.emptyList();
     }
@@ -35,54 +34,53 @@ public class Epic extends Task {
 
     @Override
     public Duration getDuration() {
-        List<SubTask> subTasks = getSubTasks(); // Получение списка подзадач
-        if (subTaskIds.isEmpty()) { // Проверяем, есть ли у эпика подзадачи
-            return Duration.ZERO; // Если нет подзадач - продолжительность 0
+        List<SubTask> subTasks = getSubTasks();
+        if (subTaskIds.isEmpty()) {
+            return Duration.ZERO;
         }
 
-        return Duration.ofMinutes(// Преобразуем суммарные минуты обратно в объект Duration, возвращает итоговую продолжительность эпика
-                subTasks.stream()// Преобразуем список в поток Stream для функциональной обработки
-                        .filter(subTask -> subTask != null)// Отфильтровываем возможные null-значения в списке подзадач
-                        .mapToLong(subTask -> { // Преобразование в минуты
-                            Duration duration = subTask.getDuration(); // Получаем продолжительность подзадачи
-                            if (duration != null) { // Если продолжительность задана
-                                return duration.toMinutes(); // Конвертируем в минуты
+        return Duration.ofMinutes(
+                subTasks.stream()
+                        .filter(subTask -> subTask != null)
+                        .mapToLong(subTask -> {
+                            Duration duration = subTask.getDuration();
+                            if (duration != null) {
+                                return duration.toMinutes();
                             }
-                            return 0; // Если продолжительность не задана, считаем 0 минут
+                            return 0;
                         })
-                        .sum()// Суммируем все значения продолжительности подзадач в минутах
+                        .sum()
         );
     }
 
     @Override
     public LocalDateTime getStartTime() { // Метод, определяющий самое раннее время начала среди подзадач эпика
-        List<SubTask> subTasks = getSubTasks(); // Получение списка всех подзадач текущего эпика
-        if (subTaskIds.isEmpty()) { // Проверка на отсутствие подзадач - список ID пуст
-            return null; // Если нет подзадач - время начала не определено
+        List<SubTask> subTasks = getSubTasks();
+        if (subTaskIds.isEmpty()) {
+            return null;
         }
 
-        return subTasks.stream()// Преобразуем список подзадач в Stream для функциональной обработки
-                .filter(subTask -> subTask != null)// Удаляем из потока все подзадачи, которые могут быть null
-                .map(SubTask::getStartTime)// Для каждой подзадачи получаем её время начала
-                .filter(startTime -> startTime != null)// Удаляем все null-значения времени начала, остаются только подзадачи с заданным временем начала
-                .min(LocalDateTime::compareTo)// Находим самое раннее время начала
-                .orElse(null); /* Если после всех фильтраций не осталось ни одного времени (все подзадачи без времени),
-                                        возвращаем null, иначе возвращаем найденное минимальное время */
+        return subTasks.stream()
+                .filter(subTask -> subTask != null)
+                .map(SubTask::getStartTime)
+                .filter(startTime -> startTime != null)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
     }
 
     @Override
     public LocalDateTime getEndTime() {
-        List<SubTask> subTasks = getSubTasks(); // Получение списка всех подзадач текущего эпика
-        if (subTaskIds.isEmpty()) { // Проверка на отсутствие подзадач
-            return null; // Если нет подзадач - время не определено
+        List<SubTask> subTasks = getSubTasks();
+        if (subTaskIds.isEmpty()) {
+            return null;
         }
 
-        return subTasks.stream()// Преобразуем список подзадач в Stream для обработки в функциональном стиле
-                .filter(subTask -> subTask != null)// Удаляем из потока все подзадачи, которые могут быть null
-                .map(SubTask::getEndTime)// Для каждой подзадачи получаем её время окончания
-                .filter(obj -> obj != null)// Удаляем все null-значения времени окончания, остаются только подзадачи с заданным временем окончания
-                .max(LocalDateTime::compareTo)// Находим самое позднее время окончания среди всех подзадач
-                .orElse(null); // Если Stream пуст (нет подзадач с временем), возвращает null, иначе возвращает найденное максимальное время
+        return subTasks.stream()
+                .filter(subTask -> subTask != null)
+                .map(SubTask::getEndTime)
+                .filter(obj -> obj != null)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
     }
 
     @Override
@@ -105,24 +103,21 @@ public class Epic extends Task {
 
     @Override
     public String toStringFromFile() { // Метод преобразует объект эпика в CSV-строку
-        // Обработка продолжительности (duration)
-        long durationMinutes; // Продолжительность в минутах
+        long durationMinutes;
         if (getDuration() != null) {
             durationMinutes = getDuration().toMinutes();
         } else {
             durationMinutes = 0;
         }
 
-        // Обработка времени начала (startTime)
-        String startTimeStr; // Строковое представление времени начала
+        String startTimeStr;
         if (getStartTime() != null) {
             startTimeStr = getStartTime().toString();
         } else {
             startTimeStr = "null";
         }
 
-        // Обработка времени окончания (endTime)
-        String endTimeStr; // Строковое представление времени окончания
+        String endTimeStr;
         if (getEndTime() != null) {
             endTimeStr = getEndTime().toString();
         } else {

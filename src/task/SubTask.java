@@ -21,7 +21,7 @@ public class SubTask extends Task {
     }
 
     public int getEpicId() {
-        return epicId;
+        return this.epicId;
     }
 
     @Override
@@ -44,20 +44,18 @@ public class SubTask extends Task {
 
     @Override
     public String toStringFromFile() { // Метод преобразует объект подзадачи в CSV-строку
-        // Обработка продолжительности (duration)
         long durationValue;
         if (getDuration() != null) {
-            durationValue = getDuration().toMinutes(); // Если продолжительность задана, получаем минуты
+            durationValue = getDuration().toMinutes();
         } else {
-            durationValue = 0; // Если продолжительность не задана, используем 0
+            durationValue = 0;
         }
 
-        // Обработка времени начала (startTime)
         String startTimeStr;
         if (getStartTime() != null) {
-            startTimeStr = getStartTime().toString(); // Если время задано, преобразуем в строку
+            startTimeStr = getStartTime().toString();
         } else {
-            startTimeStr = "null"; // Если время не задано, используем строку "null"
+            startTimeStr = "null";
         }
 
         return String.format("%d,%s,%s,%s,%s,%d,%s,%d",
@@ -66,8 +64,8 @@ public class SubTask extends Task {
                 getName(),
                 getStatus().name(),
                 getDescription(),
-                durationValue, // Подставляем обработанное значение продолжительности
-                startTimeStr,  // Подставляем обработанное значение времени начала
-                getEpicId());  // ID эпика, к которому относится подзадача
+                durationValue,
+                startTimeStr,
+                getEpicId());
     }
 }

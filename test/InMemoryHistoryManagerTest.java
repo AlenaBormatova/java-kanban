@@ -19,7 +19,7 @@ class InMemoryHistoryManagerTest {
         Task task = new Task(1, "Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
         historyManager.add(task);
 
-        final List<Task> history = historyManager.getHistory(); // Получаем историю просмотров
+        final List<Task> history = historyManager.getHistory();
 
         assertNotNull(history, "История не должна быть null.");
         assertEquals(1, history.size(), "История должна содержать одну задачу.");
@@ -32,7 +32,6 @@ class InMemoryHistoryManagerTest {
         Task task = new Task("Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
         historyManager.add(task);
 
-        // Добавить одну и ту же задачу в историю несколько раз
         historyManager.add(task);
         historyManager.add(task);
         historyManager.add(task);
@@ -98,16 +97,15 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldMaintainInsertionOrder() { // Проверка на соблюдение порядка вставки
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager(); // Создание экземпляра менеджера
+        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
 
         Task task1 = new Task(1, "Тестовая задача № 1", "Описание тестовой задачи № 1", Status.NEW);
         Task task2 = new Task(2, "Тестовая задача № 2", "Описание тестовой задачи № 2", Status.NEW);
         Task task3 = new Task(3, "Тестовая задача № 3", "Описание тестовой задачи № 3", Status.NEW);
 
-        // Добавляем задачи в требуемом порядке
         historyManager.add(task1);
         historyManager.add(task3);
-        historyManager.add(task2); // Третья задача добавляется последней
+        historyManager.add(task2);
 
         List<Task> history = historyManager.getHistory();
 
@@ -137,9 +135,8 @@ class InMemoryHistoryManagerTest {
         assertTrue(epic.getSubTaskIds().containsAll(List.of(subTask1.getId(), subTask2.getId(), subTask3.getId())),
                 "Эпик должен содержать все добавленные подзадачи");
 
-        taskManager.deleteSubTaskById(subTask2.getId()); // Удаление 2 подзадачи
+        taskManager.deleteSubTaskById(subTask2.getId());
 
-        // Проверка, что в эпике остались только актуальные подзадачи
         assertEquals(2, epic.getSubTaskIds().size(), "Эпик должен содержать 2 подзадачи после удаления");
         assertTrue(epic.getSubTaskIds().contains(subTask1.getId()), "Эпик должен содержать подзадачу 1");
         assertTrue(epic.getSubTaskIds().contains(subTask3.getId()), "Эпик должен содержать подзадачу 3");
@@ -150,7 +147,6 @@ class InMemoryHistoryManagerTest {
 
         assertTrue(epic.getSubTaskIds().isEmpty(), "Список подзадач эпика должен быть пустым после их удаления");
 
-        // Дополнительная проверка через менеджер
         assertTrue(taskManager.getSubTasksByEpicId(epicId).isEmpty(),
                 "Менеджер не должен возвращать удаленные подзадачи для эпика");
     }
@@ -177,7 +173,7 @@ class InMemoryHistoryManagerTest {
         historyManager.add(task2);
         historyManager.add(task3);
 
-        historyManager.remove(2); // Удаляем из середины
+        historyManager.remove(2);
 
         List<Task> history = historyManager.getHistory();
         assertEquals(2, history.size(), "В истории должно быть 2 задачи после удаления.");
