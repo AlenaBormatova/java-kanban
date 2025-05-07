@@ -1,35 +1,29 @@
 import manager.FileBackedTaskManager;
+import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.SubTask;
 import task.Task;
 import tools.Status;
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-class FileBackedTaskManagerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    File file;
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    private File file;
 
-    {
-        try {
-            file = File.createTempFile("Test_file", ".csv");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    protected FileBackedTaskManager createTaskManager() throws IOException {
+        file = File.createTempFile("Test_file", ".csv");
+        return new FileBackedTaskManager(file);
     }
-
-    FileBackedTaskManager manager = new FileBackedTaskManager(file);
 
     @Test
     void testSaveAndLoadEmptyFile() throws IOException { // Проверяет сохранение и загрузку пустого менеджера
-
-        // Проверяем, что все списки пусты
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
         assertTrue(manager.getAllTasks().isEmpty(), "Список задач должен быть пустым");
         assertTrue(manager.getAllEpics().isEmpty(), "Список эпиков должен быть пустым");
         assertTrue(manager.getAllSubTasks().isEmpty(), "Список подзадач должен быть пустым");
@@ -39,8 +33,8 @@ class FileBackedTaskManagerTest {
     void testSaveAndLoadTasks() throws IOException { /* Проверяет сохранение и загрузку задач всех типов
                                                        (Task, Epic, SubTask), корректность восстановления данных
                                                        (названия, статусы, связи)*/
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
 
-        // Создаем тестовые задачи
         Task task1 = new Task("Задача № 1", "Описание № 1", Status.NEW);
         manager.addTask(task1);
         Epic epic = new Epic("Эпик № 1", "Описание эпика № 1", Status.NEW);
@@ -54,20 +48,16 @@ class FileBackedTaskManagerTest {
         Task task2 = new Task("Задача № 2", "Описание № 2", Status.NEW);
         manager.addTask(task2);
 
-        // Загружаем
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
 
-        // Проверяем задачи
         List<Task> tasks = loadedManager.getAllTasks();
         assertEquals(2, tasks.size(), "Должно быть 2 задачи");
         assertEquals(task1.getName(), tasks.getFirst().getName(), "Названия задач должны совпадать");
 
-        // Проверяем эпики
         List<Epic> epics = loadedManager.getAllEpics();
         assertEquals(1, epics.size(), "Должен быть 1 эпик");
         assertEquals(epic.getName(), epics.getFirst().getName(), "Названия эпиков должны совпадать");
 
-        // Проверяем подзадачи
         List<SubTask> subTasks = loadedManager.getAllSubTasks();
         assertEquals(3, subTasks.size(), "Должно быть 3 подзадачи");
         assertEquals(epic.getId(), subTasks.getFirst().getEpicId(), "ID эпика у подзадачи должен совпадать");
@@ -78,7 +68,7 @@ class FileBackedTaskManagerTest {
     void testTaskSerialization() {
         Task task = new Task("Test Task", "Description", Status.IN_PROGRESS);
         task.setId(1);
-        String expected = "1,TASK,Test Task,IN_PROGRESS,Description";
+        String expected = "1,TASK,Test Task,IN_PROGRESS,Description,0,null";
         assertEquals(expected, task.toStringFromFile(), "Сериализация задачи неверна");
     }
 
@@ -86,7 +76,7 @@ class FileBackedTaskManagerTest {
     void testEpicSerialization() {
         Epic epic = new Epic("Test Epic", "Epic Description", Status.NEW);
         epic.setId(2);
-        String expected = "2,EPIC,Test Epic,NEW,Epic Description,[]";
+        String expected = "2,EPIC,Test Epic,NEW,Epic Description,0,null,null,[]";
         assertEquals(expected, epic.toStringFromFile(), "Сериализация эпика неверна");
     }
 
@@ -94,7 +84,7 @@ class FileBackedTaskManagerTest {
     void testSubTaskSerialization() {
         SubTask subTask = new SubTask("Test SubTask", "Sub Description", Status.DONE, 3);
         subTask.setId(4);
-        String expected = "4,SUBTASK,Test SubTask,DONE,Sub Description,3";
+        String expected = "4,SUBTASK,Test SubTask,DONE,Sub Description,0,null,3";
         assertEquals(expected, subTask.toStringFromFile(), "Сериализация подзадачи неверна");
     }
 }

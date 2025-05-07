@@ -8,20 +8,26 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final Map<Integer, Node> historyMap = new HashMap<>(); // HashMap для быстрого доступа к узлам по id задачи
-    private Node head; // Ссылка на начало списка
-    private Node tail; // Ссылка на конец списка
+    private final Map<Integer, Node> historyMap = new HashMap<>();
+    private Node head;
+    private Node tail;
 
     @Override
     public void add(Task task) {
-        remove(task.getId()); // Удалить старую версию задачи, если она уже есть в истории
-        linkLast(task); // Добавить задачу в конец списка
+        int id = task.getId();
+        if (historyMap.containsKey(id)) {
+            remove(id);
+        }
+        linkLast(task);
     }
 
     @Override
     public void remove(int id) {
-        Node node = historyMap.remove(id); // Удалить задачу из historyMap и получить соответствующий узел
-        removeNode(node); // Удалить узел из списка, если он существует
+        Node node = historyMap.get(id);
+        if (node != null) {
+            historyMap.remove(id);
+            removeNode(node);
+        }
     }
 
     @Override
@@ -29,51 +35,49 @@ public class InMemoryHistoryManager implements HistoryManager {
         return getTasks();
     }
 
-    private void linkLast(Task task) { // Добавить задачу в конец списка
+    private void linkLast(Task task) {
         final Node newNode = new Node(task, tail, null);
 
         if (tail == null) {
             head = newNode;
         } else {
             tail.next = newNode;
+            newNode.prev = tail;
         }
         tail = newNode;
-        historyMap.put(task.getId(), newNode); // Добавить узел в historyMap
+        historyMap.put(task.getId(), newNode);
     }
 
+    private void removeNode(Node node) {
+        if (node == null) return;
 
-    private void removeNode(Node node) { // Удалить узел из списка
-        if (node != null) {
-            if (head == node && tail == node) { // Если единственный элемент в списке
-                head = null;
-                tail = null;
-            } else if (head == node) { // Если удаляем голову списка
-                head = node.next; // новая голова - следующий элемент
-                head.prev = null; // у новой головы обнуляется ссылка на предыдущий элемент
-            } else if (tail == node) { // Если удаляем хвост списка
-                tail = node.prev; // новый хвост - предыдущий элемент
-                tail.next = null; // у нового хвоста обнуляется ссылка на следующий элемент
-            } else { // Удаление из середины
-                node.prev.next = node.next;
-                node.next.prev = node.prev;
-            }
+        if (node.prev == null) {
+            head = node.next;
+        } else {
+            node.prev.next = node.next;
+        }
+
+        if (node.next == null) {
+            tail = node.prev;
+        } else {
+            node.next.prev = node.prev;
         }
     }
 
-    private List<Task> getTasks() { // Собрать все задачи из списка в ArrayList
-        List<Task> tasks = new ArrayList<>(); // Создать новый ArrayList
+    private List<Task> getTasks() {
+        List<Task> tasks = new ArrayList<>();
         Node current = head;
         while (current != null) {
-            tasks.add(current.task); // Добавить все задачи в ArrayList
+            tasks.add(current.task);
             current = current.next;
         }
-        return tasks; // Вернуть заполненный список
+        return tasks;
     }
 
     private static class Node {
-        Task task; // Задача
-        Node prev; // Ссылка на предыдущий узел
-        Node next; // Ссылка на следующий узел
+        Task task;
+        Node prev;
+        Node next;
 
         Node(Task task, Node prev, Node next) {
             this.task = task;

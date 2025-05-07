@@ -1,8 +1,8 @@
 package manager;
 
-import task.Task;
 import task.Epic;
 import task.SubTask;
+import task.Task;
 
 import java.util.List;
 
@@ -47,4 +47,8 @@ public interface TaskManager {
     List<SubTask> getSubTasksByEpicId(int epicId);
 
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks();
+
+    boolean isTaskOverlapping(Task task);
 }
