@@ -1,3 +1,5 @@
+package managerTest;
+
 import manager.InMemoryTaskManager;
 import manager.TaskManager;
 import org.junit.jupiter.api.Test;
